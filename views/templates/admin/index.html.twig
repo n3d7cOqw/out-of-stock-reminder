@@ -1,0 +1,41 @@
+{% extends "@Modules/outofstockreminder/views/templates/layout.html.twig" %}
+{#{% block content %}#}
+{#<h3>index</h3>#}
+{#    <a href="{{ url }}" class="btn btn-primary">Create</a>#}
+
+{#    <table class="table table-bordered mt-2">#}
+{#        <thead>#}
+{#        <tr>#}
+{#            <th>#</th>#}
+{#            <th>Title</th>#}
+{#            <th>Threshold</th>#}
+{#            <th>Emails</th>#}
+{#            <th>Actions</th>#}
+{#        </tr>#}
+{#        </thead>#}
+{#        <tbody>#}
+{#        {% for rule in rules %}#}
+{#        <tr>#}
+{#            <th scope="row">{{ rule.id }}</th>#}
+{#            <td>{{ rule.title }}</td>#}
+{#            <td>{{ rule.threshold }}</td>#}
+{#            <td class="active">{{ rule.email }}</td>#}
+{#            <td>#}
+{#                <button class="btn btn-success"><a href="" class="white"> </a></button>#}
+{#                <button class="btn btn-danger"><a href="" class="white">Delete</a> </button>#}
+{#            </td>#}
+{#        </tr>#}
+{#        {% endfor %}#}
+{#        </tbody>#}
+{#    </table>#}
+{#{{ categories }}#}
+{#{% endblock content %}#}
+
+{% block content %}
+        <a href="{{ url }}" class="btn btn-primary">Create</a>
+        <div class="row">
+            <div class="col">
+                {% include '@PrestaShop/Admin/Common/Grid/grid_panel.html.twig' with {'grid': gridView} %}
+            </div>
+        </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+out_of_stock_rules:
+  path: out-of-stock/rules
+  methods: [GET]
+  defaults:
+    _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::indexAction
+#    _legacy_controller: 'MyModuleDemoController'
+#    _legacy_link: 'MyModuleDemoController'
+
+sent_rule:
+  path: out-of-stock/rules
+  methods: [POST]
+  defaults:
+    _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::storeAction
+
+admin_link_block_list:
+  path: /link-widget/list
+  methods: [GET]
+  defaults:
+    _controller: PrestaShop\Module\LinkList\Controller\Admin\Improve\Design\LinkBlockController::listAction
+    # _legacy_controller is used to manage permissions
+    _legacy_controller: AdminLinkWidget
+    # No need for _legacy_link in this case
+
+out_of_stock/create_rule:
+  path: out-of-stock/create-rule
+  controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::createAction
+
+out_of_stock_edit:
+  path: out-of-stock/edit/{id}
+  methods: [GET]
+  defaults:
+    _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::editAction
+
+out_of_stock_update:
+  path: out-of-stock/update/{id}
+  methods: [POST]
+  defaults:
+    _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::updateAction
+
+out_of_stock_delete:
+  path: out-of-stock/delete/{id}
+  methods: [POST]
+  defaults:
+    _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::deleteAction

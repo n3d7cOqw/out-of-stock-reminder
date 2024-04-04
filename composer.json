@@ -1,0 +1,23 @@
+{
+  "name": "bohdan_kovhan/outofstockreminder",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Богдан",
+      "email": "email@example.com"
+    }
+  ],
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "OutOfStockReminder\\": "src/"
+    }
+  },
+  "config": {
+    "prepand-autoloader": false
+  },
+  "type": "prestashop-module"
+}

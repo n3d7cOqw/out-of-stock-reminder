@@ -1,0 +1,43 @@
+<?php
+
+namespace OutOfStockReminder\Form;
+
+
+use PrestaShop\PrestaShop\Core\Form\FormChoiceProviderInterface;
+use PrestaShopBundle\Form\Admin\Type\CategoryChoiceTreeType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
+
+
+class RuleType extends AbstractType
+{
+
+
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    {
+        $disabledCategories = [];
+
+        $builder
+            ->add("title", TextType::class, ["attr" => ["placeholder" => "rule title"], "label" => "title", "label_attr" => ["form-control-label"]])
+            ->add('category_id', CategoryChoiceTreeType::class, [
+                'label' => 'Category choice type',
+                'disabled_values' => $disabledCategories,
+            ])
+            ->add("threshold", NumberType::class, ["attr" => ["placeholder" => "threshold"], "label" => "threshold", "label_attr" => ["form-control-label"] ])
+//            ->add('status', CustomRadioType::class, [
+//                'label' => 'Status',
+//                'required' => true,
+//                'attr' => ['class' => 'form-control']
+//            ])
+            ->add("email", TextareaType::class, ["attr" => ["placeholder" => "emails"], "label" => "email", "label_attr" => ["form-control-label"]])
+            ->add("save", SubmitType::class);
+
+        parent::buildForm($builder, $options);
+    }
+}
