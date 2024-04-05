@@ -39,3 +39,7 @@
             </div>
         </div>
 {% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('../modules/outofstockreminder/views/js/delete.js') }}"></script>
+{% endblock %}

@@ -84,6 +84,7 @@ class RuleGridDefinitionFactory extends AbstractGridDefinitionFactory
                                         'route' => 'out_of_stock_delete',
                                         'route_param_name' => 'id',
                                         'route_param_field' => 'id',
+                                        "method" => "POST"
 
                                     ])
                             )

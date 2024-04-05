@@ -31,7 +31,11 @@ class Rule
     /**
      * @ORM\Column(type="integer")
      */
+    private $product_id;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
     private $category_id;
 
     /**
@@ -60,6 +64,14 @@ class Rule
 
     public function setTitle($title){
         $this->title = $title;
+    }
+
+    public function getProductId(){
+        return $this->product_id;
+    }
+
+    public function setProductId($productId){
+        $this->product_id = $productId;
     }
 
     public function getCategoryId(){

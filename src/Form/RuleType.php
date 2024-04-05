@@ -24,18 +24,20 @@ class RuleType extends AbstractType
         $disabledCategories = [];
 
         $builder
-            ->add("title", TextType::class, ["attr" => ["placeholder" => "rule title"], "label" => "title", "label_attr" => ["form-control-label"]])
+            ->add("title", TextType::class, ["attr" => ["placeholder" => "rule title"], "label" => "Title", "label_attr" => ["form-control-label"]])
+            ->add("product", TextType::class, ["attr" => ["placeholder" => "product title"], "label" => "Product", "label_attr" => ["form-control-label"], 'required' => false])
             ->add('category_id', CategoryChoiceTreeType::class, [
-                'label' => 'Category choice type',
+                'label' => 'Category',
                 'disabled_values' => $disabledCategories,
+                'required' => false
             ])
-            ->add("threshold", NumberType::class, ["attr" => ["placeholder" => "threshold"], "label" => "threshold", "label_attr" => ["form-control-label"] ])
+            ->add("threshold", NumberType::class, ["attr" => ["placeholder" => "threshold"], "label" => "Threshold", "label_attr" => ["form-control-label"] ])
 //            ->add('status', CustomRadioType::class, [
 //                'label' => 'Status',
 //                'required' => true,
 //                'attr' => ['class' => 'form-control']
 //            ])
-            ->add("email", TextareaType::class, ["attr" => ["placeholder" => "emails"], "label" => "email", "label_attr" => ["form-control-label"]])
+            ->add("email", TextareaType::class, ["attr" => ["placeholder" => "emails"], "label" => "Email", "label_attr" => ["form-control-label"]])
             ->add("save", SubmitType::class);
 
         parent::buildForm($builder, $options);

@@ -42,3 +42,8 @@ out_of_stock_delete:
   methods: [POST]
   defaults:
     _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::deleteAction
+
+out_of_stock/send_emails:
+  path: out-of-stock/send-emails
+  methods: [GET]
+  controller: OutOfStockReminder\Controller\Admin\EmailController::sendMails

@@ -31,12 +31,15 @@ class OutOfStockReminder extends Module
         return $this->createTable()
             && $this->installTab()
             && parent::install()
-            && $this->registerHook("");
+            && $this->registerHook("actionProductUpdate");
     }
 
     public function uninstall()
     {
-        return $this->deleteTable() && $this->uninstallTab() && parent::uninstall();
+        return $this->deleteTable()
+            && $this->uninstallTab()
+            && parent::uninstall()
+            && $this->unregisterHook("actionProductUpdate");
     }
 
     public function createTable()
@@ -44,6 +47,7 @@ class OutOfStockReminder extends Module
         $sqlCreate = "CREATE TABLE `" . _DB_PREFIX_ . "out_of_stock_rules` (
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
         `title` varchar(255) DEFAULT NULL, 
+        `product_id` varchar(255) DEFAULT NULL, 
         `category_id` int(11) DEFAULT NULL, 
         `threshold` varchar(255) DEFAULT NULL, 
         `email` TEXT DEFAULT NULL,
@@ -90,5 +94,76 @@ class OutOfStockReminder extends Module
         $tab = new Tab($tabId);
 
         return $tab->delete();
+    }
+
+    public function hookActionProductUpdate($params)
+    {
+        $id_product = $params["id_product"];
+        $quantity = $params["product"]->quantity;
+        $id_category_default = $params["product"]->id_category_default;
+        $sql = new DbQuery();
+        $sql->select("title, threshold, status, email")->from("out_of_stock_rules")->where('product_id = ' . $id_product)->orderBy("id");
+        $rules = Db::getInstance()->executeS($sql);
+        dd(StockAvailable::getQuantityAvailableByProduct($id_product));
+        if (count($rules) > 0) {
+            $rule = null;
+
+            foreach ($rules as $a_rule) {
+                if ($a_rule["status"] == "1") {
+                    $rule = $a_rule;
+                    break;
+                }
+
+            }
+
+            if ($quantity > $rule["threshold"]) {
+                $mail = Mail::Send(
+                    (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
+                    'contact', // email template file to be use
+                    'Out of Stock', // email subject
+                    array(
+                        '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+                        '{message}' => 'The rule ' . $rule["title"]. ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] // email content
+                    ),
+                    $rule["email"],
+                    null,
+                    Configuration::get("PS_SHOP_EMAIL")
+
+                );
+            }
+        }else{
+            $sql = new DbQuery();
+            $sql->select("title, threshold, status, email")->from("out_of_stock_rules")->where('category_id = ' . $id_category_default)->orderBy("id");
+            $rules = Db::getInstance()->executeS($sql);
+
+            if (count($rules) > 0) {
+                $rule = null;
+
+                foreach ($rules as $a_rule) {
+                    if ($a_rule["status"] == "1") {
+                        $rule = $a_rule;
+                        break;
+                    }
+
+                }
+
+                if ($quantity > $rule["threshold"]) {
+                    $mail = Mail::Send(
+                        (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
+                        'contact', // email template file to be use
+                        'Out of Stock', // email subject
+                        array(
+                            '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+                            '{message}' => 'The rule ' . $rule["title"]. ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] // email content
+                        ),
+                        $rule["email"],
+                        null,
+                        Configuration::get("PS_SHOP_EMAIL")
+
+                    );
+                }
+            }
+
+        }
     }
 }
