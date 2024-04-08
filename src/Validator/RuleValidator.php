@@ -47,8 +47,10 @@ class RuleValidator
     public static function isOneRule(Request $request):bool
     {
         return intval($request->request->get("rule")["product"] !== "")
-            + intval(isset($request->request->get("rule")["category_id"])) === 1;
+            + intval(isset($request->request->get("rule")["category_id"]) + intval($request->request->has("category_id"))) === 1;
     }
+
+    
 
 
 }

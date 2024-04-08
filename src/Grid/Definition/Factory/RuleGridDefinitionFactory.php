@@ -71,7 +71,6 @@ class RuleGridDefinitionFactory extends AbstractGridDefinitionFactory
                                         'route' => 'out_of_stock_edit',
                                         'route_param_name' => 'id',
                                         'route_param_field' => 'id',
-                                        // A click on the row will have the same effect as this action
                                         'clickable_row' => true,
                                     ])
                             )
@@ -91,20 +90,6 @@ class RuleGridDefinitionFactory extends AbstractGridDefinitionFactory
                     ])
             );
     }
-
-//    protected function getGridActions()
-//    {
-//        return (new GridActionCollection())
-//            ->add(
-//                (new SubmitGridAction('out_of_stock_delete'))
-//                    ->setName('Delete')
-//                    ->setIcon('delete')
-//                    ->setOptions([
-//                        'submit_route' => 'out_of_stock_delete',
-//                        'confirm_message' => 'Are you sure?',
-//                    ])
-//            );
-//    }
 
 
     public function getFilters(): FilterCollection

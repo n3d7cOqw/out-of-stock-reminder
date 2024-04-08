@@ -98,72 +98,71 @@ class OutOfStockReminder extends Module
 
     public function hookActionProductUpdate($params)
     {
-        $id_product = $params["id_product"];
-        $quantity = $params["product"]->quantity;
-        $id_category_default = $params["product"]->id_category_default;
-        $sql = new DbQuery();
-        $sql->select("title, threshold, status, email")->from("out_of_stock_rules")->where('product_id = ' . $id_product)->orderBy("id");
-        $rules = Db::getInstance()->executeS($sql);
-        dd(StockAvailable::getQuantityAvailableByProduct($id_product));
-        if (count($rules) > 0) {
-            $rule = null;
-
-            foreach ($rules as $a_rule) {
-                if ($a_rule["status"] == "1") {
-                    $rule = $a_rule;
-                    break;
-                }
-
-            }
-
-            if ($quantity > $rule["threshold"]) {
-                $mail = Mail::Send(
-                    (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
-                    'contact', // email template file to be use
-                    'Out of Stock', // email subject
-                    array(
-                        '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-                        '{message}' => 'The rule ' . $rule["title"]. ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] // email content
-                    ),
-                    $rule["email"],
-                    null,
-                    Configuration::get("PS_SHOP_EMAIL")
-
-                );
-            }
-        }else{
-            $sql = new DbQuery();
-            $sql->select("title, threshold, status, email")->from("out_of_stock_rules")->where('category_id = ' . $id_category_default)->orderBy("id");
-            $rules = Db::getInstance()->executeS($sql);
-
-            if (count($rules) > 0) {
-                $rule = null;
-
-                foreach ($rules as $a_rule) {
-                    if ($a_rule["status"] == "1") {
-                        $rule = $a_rule;
-                        break;
-                    }
-
-                }
-
-                if ($quantity > $rule["threshold"]) {
-                    $mail = Mail::Send(
-                        (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
-                        'contact', // email template file to be use
-                        'Out of Stock', // email subject
-                        array(
-                            '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-                            '{message}' => 'The rule ' . $rule["title"]. ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] // email content
-                        ),
-                        $rule["email"],
-                        null,
-                        Configuration::get("PS_SHOP_EMAIL")
-
-                    );
-                }
-            }
-
-        }
+//        $id_product = $params["id_product"];
+//        $quantity = $params["product"]->quantity;
+//        $id_category_default = $params["product"]->id_category_default;
+//        $sql = new DbQuery();
+//        $sql->select("title, threshold, status, email")->from("out_of_stock_rules")->where('product_id = ' . $id_product)->orderBy("id");
+//        $rules = Db::getInstance()->executeS($sql);
+//        if (count($rules) > 0) {
+//            $rule = null;
+//
+//            foreach ($rules as $a_rule) {
+//                if ($a_rule["status"] == "1") {
+//                    $rule = $a_rule;
+//                    break;
+//                }
+//
+//            }
+//
+//            if ($quantity > $rule["threshold"]) {
+//                $mail = Mail::Send(
+//                    (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
+//                    'contact', // email template file to be use
+//                    'Out of Stock', // email subject
+//                    array(
+//                        '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+//                        '{message}' => 'The rule ' . $rule["title"]. ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] // email content
+//                    ),
+//                    $rule["email"],
+//                    null,
+//                    Configuration::get("PS_SHOP_EMAIL")
+//
+//                );
+//            }
+//        }else{
+//            $sql = new DbQuery();
+//            $sql->select("title, threshold, status, email")->from("out_of_stock_rules")->where('category_id = ' . $id_category_default)->orderBy("id");
+//            $rules = Db::getInstance()->executeS($sql);
+//
+//            if (count($rules) > 0) {
+//                $rule = null;
+//
+//                foreach ($rules as $a_rule) {
+//                    if ($a_rule["status"] == "1") {
+//                        $rule = $a_rule;
+//                        break;
+//                    }
+//
+//                }
+//
+//                if ($quantity > $rule["threshold"]) {
+//                    $mail = Mail::Send(
+//                        (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
+//                        'contact', // email template file to be use
+//                        'Out of Stock', // email subject
+//                        array(
+//                            '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+//                            '{message}' => 'The rule ' . $rule["title"]. ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] // email content
+//                        ),
+//                        $rule["email"],
+//                        null,
+//                        Configuration::get("PS_SHOP_EMAIL")
+//
+//                    );
+//                }
+//            }
+//
+//        } // реалізовував щоб при оновленні товару також у разі порушення правила відправлявся мейл
     }
 }
