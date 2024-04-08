@@ -42,26 +42,26 @@ class EmailController extends FrameworkBundleAdminController
         $checkedRules = [];
         foreach ($rules as $rule) {
             $checkedRules[] = $rule["product_id"];
-//
-//            $emails = explode(" ", $rule["email"]);
-//
-//            if ($rule["threshold"] < $rule["quantity"]) {
-//                foreach ($emails as $email) {
-//                    Mail::Send(
-//                        (int)(Configuration::get('PS_LANG_DEFAULT')),
-//                        'contact',
-//                        $this->trans('Out of Stock', "Emails.Subject"),
-//                        array(
-//                            '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-//                            '{message}' => $this->trans('The rule ' . $rule["title"] . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ', "Emails.Body") . $rule["threshold"]
-//                        ),
-//                        $email,
-//                        null,
-//                        Configuration::get("PS_SHOP_EMAIL"),
-//                    );
-//                }
-//            }
-//
+
+            $emails = explode(" ", $rule["email"]);
+
+            if ($rule["threshold"] < $rule["quantity"]) {
+                foreach ($emails as $email) {
+                    Mail::Send(
+                        (int)(Configuration::get('PS_LANG_DEFAULT')),
+                        'contact',
+                        $this->trans('Out of Stock', "Emails.Subject"),
+                        array(
+                            '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+                            '{message}' => $this->trans('The rule ' . $rule["title"] . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ', "Emails.Body") . $rule["threshold"]
+                        ),
+                        $email,
+                        null,
+                        Configuration::get("PS_SHOP_EMAIL"),
+                    );
+                }
+            }
+
         }
 
         //categories
@@ -95,21 +95,21 @@ class EmailController extends FrameworkBundleAdminController
 
                             foreach ($emails as $email) {
 
-//                            Mail::Send(
-//                                (int)(Configuration::get('PS_LANG_DEFAULT')),
-//                                'contact',
-//                                $this->trans('Out of Stock', "Emails.Subject"),
-//                                array(
-//                                    '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-//                                    '{message}' => $this->trans('The rule ' . $rule["title"]
-//                                            . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ',
-//                                            "Emails.Body") . $rule["threshold"]
-//                                ),
-//                                $email,
-//                                null,
-//                                Configuration::get("PS_SHOP_EMAIL"),
-//
-//                            );
+                            Mail::Send(
+                                (int)(Configuration::get('PS_LANG_DEFAULT')),
+                                'contact',
+                                $this->trans('Out of Stock', "Emails.Subject"),
+                                array(
+                                    '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+                                    '{message}' => $this->trans('The rule ' . $rule["title"]
+                                            . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ',
+                                            "Emails.Body") . $rule["threshold"]
+                                ),
+                                $email,
+                                null,
+                                Configuration::get("PS_SHOP_EMAIL"),
+
+                            );
                             }
                         }
                     }
