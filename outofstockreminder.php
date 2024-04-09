@@ -21,8 +21,8 @@ class OutOfStockReminder extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->trans("OutOfStockReminder", [], "Modules.OutOfStockReminder.Admin");
-        $this->description = $this->trans("Reminding if the goods ", [], "Modules.OutOfStockReminder.Admin");
+        $this->displayName = $this->trans("Products out of stock reminder for administrator", [], "Modules.OutOfStockReminder.Admin");
+        $this->description = $this->trans("Reminding if the goods out of stock", [], "Modules.OutOfStockReminder.Admin");
         $this->confirmUninstall = $this->trans("Are you sure that you want to delete this module?", [], "Modules.OutOfStockReminder.Admin");
     }
 

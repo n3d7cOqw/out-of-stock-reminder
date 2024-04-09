@@ -33,6 +33,7 @@ class RuleGridDefinitionFactory extends AbstractGridDefinitionFactory
 //1
     protected function getColumns()
     {
+
         return (new ColumnCollection())
             ->add((new DataColumn('id'))
                 ->setName($this->trans('ID', [], 'Modules.OutOfStockReminder.Admin'))

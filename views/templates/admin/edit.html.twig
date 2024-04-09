@@ -19,23 +19,24 @@
             {{ form_row(formView.threshold) }}
             {{ form_row(formView.email) }}
             <div class="form-group">
-                <div class="mb-3">{{ "Status" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</div>
-                <span class="ps-switch">
+                <div class="mb-3 ml-1">{{ "Status" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</div>
+                <span class="ps-switch ml-1 {% if status == "1" %} status-active {% endif %}">
     <input
             type="radio"
             name="status"
-            id="example_off_2"
+            id="off"
             value="0"
-    />
-    <label for="example_off_2">{{ "Off" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</label>
-    <input
-            type="radio"
-            name="status"
-            id="example_on_2"
-            value="1"
             checked
     />
-    <label for="example_on_2">{{ "On" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</label>
+    <label for="off">{{ "Off" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</label>
+    <input
+            type="radio"
+            name="status"
+            id="on"
+            value="1"
+
+    />
+    <label for="on">{{ "On" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</label>
     <span class="slide-button"></span>
   </span>
             </div
@@ -47,7 +48,14 @@
 
 {% endblock content %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('../modules/outofstockreminder/views/css/style.css') }}">
+{% endblock %}
+
 {% block javascripts %}
     {{ parent() }}
+    {% if category_id == "0" %}
+        <script src="{{ asset('../modules/outofstockreminder/views/js/selected_all.js') }}"></script>
+    {% endif %}
     <script src="{{ asset('../modules/outofstockreminder/views/js/form.js') }}"></script>
 {% endblock %}

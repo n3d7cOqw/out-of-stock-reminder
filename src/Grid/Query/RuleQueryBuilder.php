@@ -29,16 +29,6 @@ final class RuleQueryBuilder extends AbstractDoctrineQueryBuilder
             )
             ->setFirstResult($searchCriteria->getOffset())
             ->setMaxResults($searchCriteria->getLimit());
-//        foreach ($searchCriteria->getFilters() as $filterName => $filterValue) {
-//            if ('id' === $filterName) {
-//                $qb->andWhere("id = :$filterName");
-//                $qb->setParameter($filterName, $filterValue);
-//                continue;
-//            }
-//
-//            $qb->andWhere("$filterName LIKE :$filterName");
-//            $qb->setParameter($filterName, '%'.$filterValue.'%');
-//        }
 
 
         return $qb;
