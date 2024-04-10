@@ -57,7 +57,9 @@ class EmailController extends FrameworkBundleAdminController
                         $this->trans('Out of Stock', "Emails.Subject"),
                         array(
                             '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-                            '{message}' => $this->trans('The rule ' . $rule["title"] . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ', "Emails.Body") . $rule["threshold"]
+                            '{message}' => $this->trans('The rule ' . $rule["title"] . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ', "Emails.Body") . $rule["threshold"],
+                            "{order_name}" => "",
+                                    "{attached_file}" => ""
                         ),
                         $email,
                         null,
@@ -108,7 +110,9 @@ class EmailController extends FrameworkBundleAdminController
                                         '{email}' => Configuration::get('PS_SHOP_EMAIL'),
                                         '{message}' => $this->trans('The rule ' . $rule["title"]
                                                 . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ',
-                                                "Emails.Body") . $rule["threshold"]
+                                                "Emails.Body") . $rule["threshold"],
+                                        "{order_name}" => "",
+                                        "{attached_file}" => ""
                                     ),
                                     $email,
                                     null,
@@ -157,7 +161,9 @@ class EmailController extends FrameworkBundleAdminController
                                     '{email}' => Configuration::get('PS_SHOP_EMAIL'),
                                     '{message}' => $this->trans('The rule ' . $defaultRule[0]->getTitle()
                                             . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ',
-                                            "Emails.Body") . $defaultRule[0]->getThreshold()
+                                            "Emails.Body") . $defaultRule[0]->getThreshold(),
+                                    "{order_name}" => "",
+                                    "{attached_file}" => ""
                                 ),
                                 $email,
                                 null,

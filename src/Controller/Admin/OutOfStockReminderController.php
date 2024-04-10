@@ -203,67 +203,80 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
 
             $sql = new \DbQuery();
             $sql->select("id_product")->from("product_lang")->where('name = "' . $request->get("rule")["product"] . '" and id_lang ="' . $this->getContext()->language->id . '"')->orderBy("name");
-            $id_product = \Db::getInstance()->executeS($sql)[0]["id_product"];
-
-
+            $id_product = \Db::getInstance()->executeS($sql);
         }
 
-        $data = [
-            "title" => $request->get("rule")["title"],
-            "status" => $request->get("status"),
-            "threshold" => $request->get("rule")["threshold"],
-            "email" => $request->get("rule")["email"],
-            "category_id" => $request->get("rule")["category_id"] ?? null,
-            "product" => $id_product ?? null,
-        ];
-        if ($request->request->has("category_id")){
-            $data["category_id"] = 0;
-        }
-        $form = $this->createForm(RuleType::class, $data);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $rule->setTitle($data["title"]);
-            $rule->setStatus($data["status"]);
-            $rule->setThreshold($data["threshold"]);
-            $rule->setEmail($data["email"]);
-            $rule->setCategoryId($data["category_id"]);
-            $rule->setProductId($data["product"]);
+        if (isset($id_product[0]["id_product"])) {
 
 
-            // check if isset any active rules for category or product
-            if ($request->get("status") === "1"){
+            $data = [
+                "title" => $request->get("rule")["title"],
+                "status" => $request->get("status"),
+                "threshold" => $request->get("rule")["threshold"],
+                "email" => $request->get("rule")["email"],
+                "category_id" => $request->get("rule")["category_id"] ?? null,
+                "product" => $id_product[0]["id_product"] ?? null,
+            ];
+            if ($request->request->has("category_id")) {
+                $data["category_id"] = 0;
+            }
+            $form = $this->createForm(RuleType::class, $data);
+            $form->handleRequest($request);
 
-                if ($rule->getCategoryId() !== null){
-                    $condition = "r.category_id = " . $rule->getCategoryId();
-                }
+            if ($form->isSubmitted() && $form->isValid() && RuleValidator::isValidForm($form, $request) && RuleValidator::isOneRule($request)) {
 
-                else{
-                    $condition = "r.product_id = ". $rule->getProductId()[0];
-                }
-                $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
-                $query = $qb->select("r")
-                    ->from(Rule::class, "r")
-                    ->where("r.status = 1")
-                    ->andWhere($condition)
-                    ->getQuery();
-                $rulesToDisable = $query->getResult();
-                if (count($rulesToDisable) > 0) {
-                    foreach ($rulesToDisable as $ruleToDisable) {
-                        $ruleToDisable->setStatus(0);
-                        $em->persist($ruleToDisable);
-                        $em->flush();
+                $em = $this->getDoctrine()->getManager();
+                $rule->setTitle($data["title"]);
+                $rule->setStatus($data["status"]);
+                $rule->setThreshold($data["threshold"]);
+                $rule->setEmail($data["email"]);
+                $rule->setCategoryId($data["category_id"]);
+                $rule->setProductId($data["product"]);
+
+
+                // check if isset any active rules for category or product
+                if ($request->get("status") === "1") {
+
+                    if ($rule->getCategoryId() !== null) {
+                        $condition = "r.category_id = " . $rule->getCategoryId();
+                    } else {
+                        $condition = "r.product_id = " . $rule->getProductId()[0];
+                    }
+                    $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
+                    $query = $qb->select("r")
+                        ->from(Rule::class, "r")
+                        ->where("r.status = 1")
+                        ->andWhere($condition)
+                        ->andWhere("r.id != " . $rule->getId())
+                        ->getQuery();
+                    $rulesToDisable = $query->getResult();
+                    if (count($rulesToDisable) > 0) {
+                        foreach ($rulesToDisable as $ruleToDisable) {
+                            dump($ruleToDisable);
+                            $ruleToDisable->setStatus(0);
+                            $em->persist($ruleToDisable);
+                            $em->flush();
+                        }
+
                     }
 
                 }
 
+
+                $em->flush();
+                $this->addFlash("success", $this->trans("The rule successfully updated", "Modules.OutOfStockReminder.Admin"));
             }
+            else{
+
+                $this->addFlash("error", $this->trans("The rule form wasn't validated", "Modules.OutOfStockReminder.Admin"));
 
 
-            $em->flush();
-            $this->addFlash("success", $this->trans("The rule successfully updated", "Modules.OutOfStockReminder.Admin"));
+            }
+        }
+        else{
+
+            $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
+
 
         }
 
