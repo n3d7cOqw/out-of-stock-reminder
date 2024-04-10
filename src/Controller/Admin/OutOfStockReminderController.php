@@ -40,12 +40,12 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
     }
 
 
-    public function createAction()
+    public function createAction($data = null)
     {
         $formView = $this->createForm(RuleType::class)->createView();
+        $status = 1;
 
-
-        return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", compact("formView"));
+        return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", compact("formView", "status"));
     }
 
     /**
@@ -106,7 +106,8 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
                 } else {
                     // product not found by title
                     $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
-                    return $this->redirectToRoute("out_of_stock/create_rule");
+                    return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", ["formView" => $form->createView(), "status" => $request->get("status")]);
+
 
                 }
 
@@ -145,7 +146,9 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
 
             $this->addFlash("error", $this->trans("The form was not validated", "Modules.OutOfStockReminder.Admin"));
 
-            return $this->redirectToRoute("out_of_stock/create_rule");
+            return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", ["formView" => $form->createView(), "status" => $request->get("status")]);
+
+//            return $this->redirectToRoute("out_of_stock/create_rule");
 
         }
 
@@ -206,7 +209,8 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
             $id_product = \Db::getInstance()->executeS($sql);
         }
 
-        if (isset($id_product[0]["id_product"])) {
+//        if (isset($id_product[0]["id_product"]) && !isset($request->request->get("rule")["category_id"])) {
+
 
 
             $data = [
@@ -239,8 +243,11 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
 
                     if ($rule->getCategoryId() !== null) {
                         $condition = "r.category_id = " . $rule->getCategoryId();
-                    } else {
+                    } else if (isset($rule->getProductId()[0])){
                         $condition = "r.product_id = " . $rule->getProductId()[0];
+                    }else{
+                        $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
+                         return  $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
                     }
                     $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
                     $query = $qb->select("r")
@@ -269,16 +276,17 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
             else{
 
                 $this->addFlash("error", $this->trans("The rule form wasn't validated", "Modules.OutOfStockReminder.Admin"));
-
+                return  $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
 
             }
-        }
-        else{
-
-            $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
-
-
-        }
+//        }
+//        else{
+//
+//            $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
+//            return  $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
+//
+//
+//        }
 
         return $this->redirectToRoute("out_of_stock_rules");
     }

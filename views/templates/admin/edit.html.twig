@@ -1,6 +1,7 @@
 {% extends '@PrestaShop/Admin/layout.html.twig' %}
 {% block content %}
     <div class="container">
+        <h2>{{ "Edit rule" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</h2>
         <form action="{{ path('out_of_stock_update', {id}) }}" method="POST">
             {{ form_start(formView) }}
 
@@ -16,6 +17,7 @@
                 </div>
             </div>
             {{ form_row(formView.category_id) }}
+            <div class="btn btn-primary mb-2" id="clearCategories"> Clear categories</div>
             {{ form_row(formView.threshold) }}
             {{ form_row(formView.email) }}
             <div class="form-group">

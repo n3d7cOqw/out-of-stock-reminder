@@ -12,9 +12,16 @@ $(document).ready(function () {
         }
     })
 
+    $("#clearCategories").click(function (){
+
+        $("div.radio input[type=radio]").prop("checked", false)
+
+    })
+
     if ($(".status-active").length > 0){
         $("#on").prop("checked", true)
     }
+
 
 });
 
