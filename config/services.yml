@@ -36,8 +36,18 @@ services:
       - '@prestashop.core.grid.filter.form_factory'
 #      - '@prestaShop.prestaShop.core.grid.filter.grid_filter_form_factory_interface'
       - '@prestashop.core.hook.dispatcher'
-
-
-
+      -
+#  prestashop.core.form.identifiable_object.data_provider.rule_form_data_provider:
+#    class: 'OutOfStockReminder\Form\RuleFormDataProvider'
+#
+#  prestashop.module.outofstockreminder.form.rule_form_data_handler:
+#    class: 'PrestaShop\PrestaShop\Core\Form\Handler'
+#    public: true
+#    arguments:
+#      - '@form.factory'
+#      - '@prestashop.core.hook.dispatcher'
+#      - '@prestashop.module.outofstockreminder.form.rule_form_data_provider'
+#      - 'PrestaShop\Module\DemoSymfonyFormSimple\Form\DemoConfigurationFormType'
+#      - 'OutOfStockReminder'
 
 

@@ -2,12 +2,10 @@
 
 namespace OutOfStockReminder\Grid\Filters;
 
-use Module\DemoGrid\Grid\Definition\Factory\ProductGridDefinitionFactory;
 use PrestaShop\PrestaShop\Core\Search\Filters;
 
 class RuleFilters extends Filters
 {
-    protected $filterId = ProductGridDefinitionFactory::GRID_ID;
 
     /**
      * {@inheritdoc}

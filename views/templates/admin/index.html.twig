@@ -1,8 +1,5 @@
 {% extends "@Modules/outofstockreminder/views/templates/layout.html.twig" %}
 
-
-
-
 {% block content %}
 
         <a href="{{ url }}" class="btn btn-primary mb-2">{{ "create rule" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</a>
@@ -17,5 +14,4 @@
     {{ parent() }}
     <script src="{{ asset('../modules/outofstockreminder/views/js/delete.js') }}"></script>
     <script src="{{ asset('../modules/outofstockreminder/views/js/status.js') }}"></script>
-    <script src="{{ asset('themes/default/js/bundle/pagination.js') }}"></script>
 {% endblock %}

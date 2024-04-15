@@ -1,11 +1,30 @@
-.form-group{
-    display: block;
-}
+/*.form-group{*/
+/*    display: block;*/
+/*}*/
 
-.form-control-label{
-    margin-left: 20px;
-}
+/*.form-control-label{*/
+/*    margin-left: 20px;*/
+/*}*/
 
-.ps-switch{
+/*.error-message{*/
+/*    color: red;*/
+/*}*/
 
-}
+/*.form-group{*/
+/*    margin-bottom: 0;*/
+/*    margin-top: 10px;*/
+/*}*/
+
+/*.card-header{*/
+/*    background-color: #fafbfc;*/
+/*    border-bottom: 1px solid #dbe6e9;*/
+/*}*/
+
+/*.card-footer{*/
+/*    background-color: #fafbfc;*/
+/*    border-top: 1px solid #dbe6e9;*/
+/*}*/
+
+/*.card-body{*/
+/*    background: #fff;*/
+/*}*/

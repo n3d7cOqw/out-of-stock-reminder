@@ -1,59 +1,29 @@
 {% extends '@PrestaShop/Admin/layout.html.twig' %}
+
 {% block content %}
-    <div class="container">
-        <h2>{{ "Create Rule" |trans({}, 'Modules.OutOfStockReminder.Admin') }}</h2>
-        <form action="{{ path('sent_rule') }}" method="POST">
-            {{ form_start(formView) }}
+    {{ form_start(formView) }}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="pt-2 pl-2">{{ "Create Rule" |trans({}, 'Modules.OutOfStockReminder.Admin') }}</h2>
+        </div>
+        <div class="card-body ">
+            {{ form_errors(formView) }}
+                {{ form_widget(formView) }}
+        </div>
 
-            {{ form_row(formView.title) }}
-            {{ form_row(formView.product) }}
-            <div class="form-group">
-                <div class="md-checkbox">
-                    <label>
-                        <input type="checkbox" name="category_id" id="selectAllCategories">
-                        <i class="md-checkbox-control"></i>
-                        {{ "Select all categories " |trans({}, 'Modules.OutOfStockReminder.Admin') }}
-                    </label>
-                </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-primary float-right" id="save-button">
+                    {{ 'Save'|trans({}, 'Admin.Actions') }}
+                </button>
             </div>
-
-            {{ form_row(formView.category_id) }}
-            <div class="btn btn-primary mb-2" id="clearCategories"> Clear categories</div>
-            {{ form_row(formView.threshold) }}
-            {{ form_row(formView.email) }}
-            <div class="form-group">
-                <div class="mb-3 ml-1">{{ "Status" |trans({}, 'Modules.OutOfStockReminder.Admin') }}</div>
-                <span class="ps-switch ml-1 {% if status == 1 %} status-active {% endif %}">
-
-    <input
-            type="radio"
-            name="status"
-            id="off"
-            value="0"
-            checked
-    />
-    <label for="off">{{ "Off" |trans({}, 'Modules.OutOfStockReminder.Admin') }}</label>
-    <input
-            type="radio"
-            name="status"
-            id="on"
-            value="1"
-
-    />
-    <label for="on">{{ "On" |trans({}, 'Modules.OutOfStockReminder.Admin') }}</label>
-    <span class="slide-button"></span>
-  </span>
-            </div
-            {{ form_row(formView.save) }}
-            {{ form_end(formView) }}
-
-        </form>
+        </div>
     </div>
+
+
+    {{ form_end(formView) }}
 {% endblock content %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('../modules/outofstockreminder/views/css/style.css') }}">
-{% endblock %}
 
 {% block javascripts %}
     {{ parent() }}

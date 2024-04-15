@@ -24,12 +24,6 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
         $quoteGridFactory = $this->get('out_of_stock_reminder.grid.factory.rules');
         $emptySearchCriteria = new SearchCriteria();
         $quoteGrid = $quoteGridFactory->getGrid($emptySearchCriteria);
-        foreach ($quoteGrid->getData()->getRecords() as $record) {
-            $record["status"] = "hjd";
-
-        }
-
-
         $gridView = $this->presentGrid($quoteGrid);
 
         $link = \Context::getContext()->link;
@@ -40,136 +34,111 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
     }
 
 
-    public function createAction($data = null)
+    public function createAction(Request $request)
     {
-        $formView = $this->createForm(RuleType::class)->createView();
-        $status = 1;
 
-        return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", compact("formView", "status"));
+        $form = $this->createForm(RuleType::class, [], ["action" => $this->generateUrl("sent_rule"), "method" => "POST"]);
+        $formView = $form->createView();
+
+        return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", compact("formView"));
     }
 
-    /**
-     *
-     *
-     * @param Request $request
-     *
-     * @return Response
-     */
     public function storeAction(Request $request)
     {
         $form = $this->createForm(RuleType::class);
         $form->handleRequest($request);
-        if ($request->request->has("category_id")) {
 
-            $request->request->set("category_id", 0);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (RuleValidator::isValidForm($form) === []) {
+                $em = $this->getDoctrine()->getManager();
 
-        }
-        if ($form->isSubmitted() && $form->isValid() && RuleValidator::isOneRule($request) && RuleValidator::isValidForm($form, $request)) {
-
-            $em = $this->getDoctrine();
-            $rule = new Rule();
-            $rule->setTitle(trim($form->get('title')->getData()));
-            $rule->setThreshold(trim($form->get('threshold')->getData()));
-            $rule->setStatus($request->request->get("status"));
-            $rule->setEmail(trim($form->get('email')->getData()));
-
-            if (RuleValidator::issetProduct($request)) {
                 $title = trim($form->get('product')->getData());
                 $sql = new \DbQuery();
-                $sql->select("id_product")->from("product_lang")->where('name = "' . $title . '" and id_lang ="' . $this->getContext()->language->id . '"')->orderBy("name");
+                $sql->select("id_product")
+                    ->from("product_lang")
+                    ->where('name = "' . $title . '" and id_lang ="' . $this->getContext()->language->id . '"')
+                    ->orderBy("name");
                 $id_product = \Db::getInstance()->executeS($sql);
-                if (count($id_product) > 0) {
+                if (!isset($id_product[0]["id_product"]) && RuleValidator::isValidTitle($title)){
 
-
-                    // check if isset any active rules for product
-                    if ($request->request->get("status") === "1") {
-                        $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
-                        $query = $qb->select("r")
-                            ->from(Rule::class, "r")
-                            ->where("r.status = 1")
-                            ->Andwhere("r.product_id = " . $id_product[0]["id_product"])
-                            ->getQuery();
-                        $productRules = $query->getResult();
-                        if (count($productRules) > 0) {
-
-                            foreach ($productRules as $productRule) {
-                                $productRule->setStatus(0);
-                                $em->getManager()->persist($productRule);
-                                $em->getManager()->flush();
-                            }
-
-                        }
-                    }
-
-                    $rule->setProductId($id_product[0]["id_product"]);
-
-                } else {
-                    // product not found by title
                     $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
-                    return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", ["formView" => $form->createView(), "status" => $request->get("status")]);
-
+                    return $this->redirectToRoute("out_of_stock/create_rule");
 
                 }
 
-            } else {
-                // set category id
-                $rule->setCategoryId($form->get('category_id')->getData() ?? $request->request->get("category_id"));
+                $rule = new Rule();
+                $rule->setTitle($request->get("rule")["title"]);
+                $rule->setProductId($id_product[0]["id_product"] ?? null);
+                $rule->setCategoryId($form->get("category_id")->getData()  );
+                $rule->setThreshold($request->get("rule")["threshold"]);
+                $rule->setStatus($request->get("rule")["status"]);
+                $rule->setEmail($request->get("rule")["email"]);
 
-                // check if isset any active rules for category
+                if ($form->get("select_all_categories")->getData() === 1){
+                    $rule->setCategoryId(0);
+                }
 
-                if ($request->request->get("status") === "1") {
+                if ($request->get("rule")["status"] == "1") {
+
+                    if ($rule->getCategoryId() !== null) {
+                        $condition = "r.category_id = " . $rule->getCategoryId();
+                    } else if ($rule->getProductId() !== null){
+                        $condition = "r.product_id = " . $rule->getProductId();
+                    }else{
+                        $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
+                        return  $this->redirectToRoute("out_of_stock/create_rule");
+                    }
                     $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
                     $query = $qb->select("r")
                         ->from(Rule::class, "r")
                         ->where("r.status = 1")
-                        ->andWhere("r.category_id = " . $rule->getCategoryId())
+                        ->andWhere($condition)
                         ->getQuery();
-                    $categoryRules = $query->getResult();
-                    if (count($categoryRules) > 0) {
-                        foreach ($categoryRules as $catRule) {
-                            $catRule->setStatus(0);
-                            $em->getManager()->persist($catRule);
-                            $em->getManager()->flush();
+                    $rulesToDisable = $query->getResult();
+                    if (count($rulesToDisable) > 0) {
+                        foreach ($rulesToDisable as $ruleToDisable) {
+                            $ruleToDisable->setStatus(0);
+                            $em->persist($ruleToDisable);
+                            $em->flush();
                         }
 
                     }
+
                 }
+
+
+                $em->persist($rule);
+                $em->flush();
+
+                $this->addFlash("success", $this->trans("rule successfully created ", "Modules.OutOfStockReminder.Admin"));
+
+                return $this->redirectToRoute("out_of_stock_rules");
+
+            } else {
+
+                foreach (RuleValidator::isValidForm($form) as $error) {
+                    $this->addFlash("error", $this->trans($error, "Modules.OutOfStockReminder.Admin"));
+
+                }
+
+                return $this->redirectToRoute("out_of_stock/create_rule");
             }
-
-            $em->getManager()->persist($rule);
-            $em->getManager()->flush();
-
-            $this->addFlash("success", $this->trans("The form has sent", "Modules.OutOfStockReminder.Admin"));
-            return $this->redirectToRoute("out_of_stock_rules");
-
-        } else {
-
-            $this->addFlash("error", $this->trans("The form was not validated", "Modules.OutOfStockReminder.Admin"));
-
-            return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", ["formView" => $form->createView(), "status" => $request->get("status")]);
-
-//            return $this->redirectToRoute("out_of_stock/create_rule");
-
         }
-
-
-//        return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", ["formView" => $form->createView()]);
-
+        return $this->redirectToRoute("out_of_stock_rules");
     }
 
-    public function editAction(int $id)
+    public function editAction(int $id, Request $request)
     {
         $em = $this->getDoctrine()->getManager();
         $rule = $em->getRepository(Rule::class)->find($id);
-        $status = $rule->getStatus();
         $data = [
+
             "title" => $rule->getTitle(),
             "status" => $rule->getStatus(),
             "threshold" => $rule->getThreshold(),
             "email" => $rule->getEmail(),
 
         ];
-
         if ($rule->getProductId() !== null) {
             $sql = new \DbQuery();
             $sql->select("name")->from("product_lang")->where('id_product = "' . $rule->getProductId() . '" and id_lang ="' . $this->getContext()->language->id . '"')->orderBy("name");
@@ -184,67 +153,55 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
 
         }
 
-        $form = $this->createForm(RuleType::class, $data);
+        $form = $this->createForm(RuleType::class, $data, ["action" => $this->generateUrl("out_of_stock_update", ["id" => $id]), "method" => "POST"]);
         $formView = $form->createView();
-        if (isset($data["category_id"])){
-            $category_id = $data["category_id"];
-        }else{
-            $category_id = null;
-        }
 
-        return $this->render("@Modules/outofstockreminder/views/templates/admin/edit.html.twig", compact("formView", "id", "status", "category_id"));
+        return $this->render("@Modules/outofstockreminder/views/templates/admin/edit.html.twig", compact("formView"));
     }
 
     public function updateAction(int $id, Request $request)
     {
-
         $em = $this->getDoctrine()->getManager();
         $rule = $em->getRepository(Rule::class)->find($id);
-
-
-        if ($request->get("rule")["product"] != null) {
-
+        $data = [
+            "title" => $request->get("rule")["title"],
+            "status" => $request->get("rule")["status"],
+            "threshold" => $request->get("rule")["threshold"],
+            "email" => $request->get("rule")["email"],
+        ];
+        $form = $this->createForm(RuleType::class, $data);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid() && RuleValidator::isValidForm($form) === [] && RuleValidator::isOneRule($request)){
             $sql = new \DbQuery();
-            $sql->select("id_product")->from("product_lang")->where('name = "' . $request->get("rule")["product"] . '" and id_lang ="' . $this->getContext()->language->id . '"')->orderBy("name");
+            $sql->select("id_product")
+                ->from("product_lang")
+                ->where('name = "' . trim($form->get("product")->getData()) . '" and id_lang ="' . $this->getContext()->language->id . '"')
+                ->orderBy("name");
             $id_product = \Db::getInstance()->executeS($sql);
-        }
 
-//        if (isset($id_product[0]["id_product"]) && !isset($request->request->get("rule")["category_id"])) {
+            if (!isset($id_product[0]["id_product"]) && RuleValidator::isValidTitle(trim($form->get("product")->getData())) ){
+                $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
+                return $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
 
-
-
-            $data = [
-                "title" => $request->get("rule")["title"],
-                "status" => $request->get("status"),
-                "threshold" => $request->get("rule")["threshold"],
-                "email" => $request->get("rule")["email"],
-                "category_id" => $request->get("rule")["category_id"] ?? null,
-                "product" => $id_product[0]["id_product"] ?? null,
-            ];
-            if ($request->request->has("category_id")) {
-                $data["category_id"] = 0;
             }
-            $form = $this->createForm(RuleType::class, $data);
-            $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid() && RuleValidator::isValidForm($form, $request) && RuleValidator::isOneRule($request)) {
+            $rule->setTitle(trim($form->get("title")->getData()));
+            $rule->setProductId($id_product[0]["id_product"] ?? null);
+            $rule->setCategoryId($form->get("category_id")->getData() );
+            $rule->setStatus($form->get("status")->getData());
+            $rule->setThreshold($form->get("threshold")->getData());
+            $rule->setEmail(trim($form->get("email")->getData()));
 
-                $em = $this->getDoctrine()->getManager();
-                $rule->setTitle($data["title"]);
-                $rule->setStatus($data["status"]);
-                $rule->setThreshold($data["threshold"]);
-                $rule->setEmail($data["email"]);
-                $rule->setCategoryId($data["category_id"]);
-                $rule->setProductId($data["product"]);
+            if ($form->get("select_all_categories")->getData() === 1){
+                $rule->setCategoryId(0);
+            }
 
-
-                // check if isset any active rules for category or product
-                if ($request->get("status") === "1") {
+            if ($request->get("rule")["status"] == "1") {
 
                     if ($rule->getCategoryId() !== null) {
                         $condition = "r.category_id = " . $rule->getCategoryId();
-                    } else if (isset($rule->getProductId()[0])){
-                        $condition = "r.product_id = " . $rule->getProductId()[0];
+                    } else if ($rule->getProductId() !== null){
+                        $condition = "r.product_id = " . $rule->getProductId();
                     }else{
                         $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
                          return  $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
@@ -259,7 +216,6 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
                     $rulesToDisable = $query->getResult();
                     if (count($rulesToDisable) > 0) {
                         foreach ($rulesToDisable as $ruleToDisable) {
-                            dump($ruleToDisable);
                             $ruleToDisable->setStatus(0);
                             $em->persist($ruleToDisable);
                             $em->flush();
@@ -269,26 +225,25 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
 
                 }
 
+            $em->persist($rule);
+            $em->flush();
 
-                $em->flush();
-                $this->addFlash("success", $this->trans("The rule successfully updated", "Modules.OutOfStockReminder.Admin"));
+            $this->addFlash("success", $this->trans("The rule successfully updated", "Modules.OutOfStockReminder.Admin"));
+
+            return $this->redirectToRoute("out_of_stock_rules");
+
+        } else {
+
+            $this->flashErrors(RuleValidator::isValidForm($form));
+
+            if (!RuleValidator::isOneRule($request)){
+                $this->addFlash("error", $this->trans("Select category or product", "Modules.OutOfStockReminder.Admin"));
+
             }
-            else{
 
-                $this->addFlash("error", $this->trans("The rule form wasn't validated", "Modules.OutOfStockReminder.Admin"));
-                return  $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
 
-            }
-//        }
-//        else{
-//
-//            $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
-//            return  $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
-//
-//
-//        }
-
-        return $this->redirectToRoute("out_of_stock_rules");
+            return $this->redirectToRoute("out_of_stock_edit", ["id" => $id]);
+        }
     }
 
     public function deleteAction(int $id)

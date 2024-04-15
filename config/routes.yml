@@ -3,7 +3,7 @@ out_of_stock_rules:
   methods: [GET]
   defaults:
     _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::indexAction
-#    _legacy_controller: 'MyModuleDemoController'
+#    _legacy_controller: AdminLinkWidget
 #    _legacy_link: 'MyModuleDemoController'
 
 sent_rule:

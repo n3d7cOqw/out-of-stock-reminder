@@ -74,7 +74,7 @@ class OutOfStockReminder extends Module
         $tab->route_name = 'out_of_stock_rules';
         $tab->name = array();
         foreach (Language::getLanguages() as $lang) {
-            $tab->name[$lang['id_lang']] = $this->trans('Rules of out stock notification', array(), 'Modules.out_of_stock_rules.Admin');
+            $tab->name[$lang['id_lang']] = $this->trans('Rules of out stock notification', array(), 'Modules.OutOfStockReminder.Admin');
         }
         $tab->id_parent = (int)Tab::getIdFromClassName('AdminCatalog');
         $tab->module = $this->name;
