@@ -1,17 +1,37 @@
-{% extends "@Modules/outofstockreminder/views/templates/layout.html.twig" %}
+{#{% extends "@Modules/outofstockreminder/views/templates/layout.html.twig" %}#}
 
+{#<a href="{{ url }}"#}
+{#   class="btn btn-primary mb-2">{{ "create rule" |trans({}, 'Modules.OutOfStockReminder.Admin') }}</a>#}
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
 {% block content %}
-
-        <a href="{{ url }}" class="btn btn-primary mb-2">{{ "create rule" |trans({}, 'Modules.OutOfStockReminder.Admin')}}</a>
-
+    {% block quotes_list_panel %}
+        {%block notifications_message %}
+            <div class="notification-block-message d-none">
+                <div class="growl growl-default growl-medium">
+                    <div class="growl-close">×</div>
+                    <div class="growl-title">Success!</div>
+                    <div class="growl-message"></div>
+                </div>
+            </div>
+        {% endblock %}
         <div class="row">
             <div class="col">
                 {% include '@PrestaShop/Admin/Common/Grid/grid_panel.html.twig' with {'grid': gridView} %}
             </div>
         </div>
+    {% endblock %}
 {% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+    <link rel="stylesheet" href="{{ asset('../modules/outofstockreminder/views/css/style.css') }}">
+{% endblock %}
+
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('../modules/outofstockreminder/views/js/delete.js') }}"></script>
+    <script src="{{ asset('../modules/outofstockreminder/views/js/index.js') }}"></script>
     <script src="{{ asset('../modules/outofstockreminder/views/js/status.js') }}"></script>
+    <script src="{{ asset('themes/default/js/bundle/pagination.js') }}"></script>
+
 {% endblock %}

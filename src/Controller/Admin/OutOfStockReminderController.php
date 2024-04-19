@@ -7,10 +7,12 @@ use Context;
 use Helper;
 use HelperTreeCategories;
 
+use OutOfStockReminder\Grid\Definition\Factory\RuleGridDefinitionFactory;
 use OutOfStockReminder\Grid\Filters\RuleFilters;
 use OutOfStockReminder\Validator\RuleValidator;
 use PrestaShop\PrestaShop\Core\Grid\Search\SearchCriteria;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
+use PrestaShopBundle\Service\Grid\ResponseBuilder;
 use Product;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,27 +21,66 @@ use OutOfStockReminder\Form\RuleType;
 
 class OutOfStockReminderController extends FrameworkBundleAdminController
 {
+    /**
+     * List quotes
+     *
+     * @param RuleFilters $filters
+     *
+     * @return Response
+     */
     public function indexAction(RuleFilters $filters)
     {
         $quoteGridFactory = $this->get('out_of_stock_reminder.grid.factory.rules');
-        $emptySearchCriteria = new SearchCriteria();
-        $quoteGrid = $quoteGridFactory->getGrid($emptySearchCriteria);
-        $gridView = $this->presentGrid($quoteGrid);
+        $quoteGrid = $quoteGridFactory->getGrid($filters);
 
+        $gridView = $this->presentGrid($quoteGrid);
         $link = \Context::getContext()->link;
         $url = $link->getAdminLink("OutOfStockReminder", true, ["route" => "out_of_stock/create_rule"]);
-
-        return $this->render("@Modules/outofstockreminder/views/templates/admin/index.html.twig", compact("url", "gridView"));
+        $layoutTitle = $this->trans('Out of stock Reminder', 'Modules.OutOfStockReminder.Admin');
+        $layoutHeaderToolbarBtn = $this->getToolbarButtons();
+        return $this->render("@Modules/outofstockreminder/views/templates/admin/index.html.twig", compact("url", "gridView", "layoutTitle", "layoutHeaderToolbarBtn" ));
 
     }
 
-
-    public function createAction(Request $request)
+    private function getToolbarButtons()
     {
+        return [
+            'add' => [
+                'desc' => $this->trans('Add new rule', 'Modules.OutOfStockReminder.Admin'),
+                'icon' => 'add_circle_outline',
+                'href' => $this->generateUrl('out_of_stock/create_rule'),
+            ],
+        ];
+    }
 
-        $form = $this->createForm(RuleType::class, [], ["action" => $this->generateUrl("sent_rule"), "method" => "POST"]);
-        $formView = $form->createView();
+    public function searchAction(Request $request)
+    {
+        /** @var ResponseBuilder $responseBuilder */
+        $responseBuilder = $this->get('prestashop.bundle.grid.response_builder');
 
+        return $responseBuilder->buildSearchResponse(
+            $this->get('out_of_stock_reminder.grid.definition.factory.rules'),
+            $request,
+            RuleGridDefinitionFactory::GRID_ID,
+            'out_of_stock_rules'
+        );
+    }
+
+    public function createAction(Request $request,)
+    {
+        if ($request->query->get("formData") !== null){
+            $form = $this->createForm(RuleType::class, [], ["action" => $this->generateUrl("sent_rule"), "method" => "POST"]);
+            $form->get("title")->setData($request->get("formData")["title"]);
+            $form->get("threshold")->setData($request->get("formData")["threshold"]);
+            $form->get("category_id")->setData($request->get("formData")["category_id"] ?? null);
+            $form->get("product")->setData($request->get("formData")["product"] ?? null);
+            $form->get("threshold")->setData($request->get("formData")["threshold"]);
+            $form->get("status")->setData($request->get("formData")["status"]);
+            $form->get("email")->setData($request->get("formData")["email"]);
+        }else{
+            $form = $this->createForm(RuleType::class, [], ["action" => $this->generateUrl("sent_rule"), "method" => "POST"]);
+        }
+        $formView =  $form->createView();
         return $this->render("@Modules/outofstockreminder/views/templates/admin/create.html.twig", compact("formView"));
     }
 
@@ -56,7 +97,7 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
                 $sql = new \DbQuery();
                 $sql->select("id_product")
                     ->from("product_lang")
-                    ->where('name = "' . $title . '" and id_lang ="' . $this->getContext()->language->id . '"')
+                    ->where('name = "' .pSQL($title) . '" and id_lang ="' . $this->getContext()->language->id . '"')
                     ->orderBy("name");
                 $id_product = \Db::getInstance()->executeS($sql);
                 if (!isset($id_product[0]["id_product"]) && RuleValidator::isValidTitle($title)){
@@ -86,7 +127,7 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
                         $condition = "r.product_id = " . $rule->getProductId();
                     }else{
                         $this->addFlash("error", $this->trans("The product " . $request->request->get("rule")["product"] . " wasn't found", "Modules.OutOfStockReminder.Admin"));
-                        return  $this->redirectToRoute("out_of_stock/create_rule");
+                        return  $this->redirectToRoute("out_of_stock/create_rule", ["formData" => $request->request->all()["rule"]]);
                     }
                     $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
                     $query = $qb->select("r")
@@ -116,12 +157,14 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
 
             } else {
 
-                foreach (RuleValidator::isValidForm($form) as $error) {
-                    $this->addFlash("error", $this->trans($error, "Modules.OutOfStockReminder.Admin"));
+                $this->flashErrors(RuleValidator::isValidForm($form));
+
+                if (!RuleValidator::isOneRule($request)){
+
+                    $this->addFlash("error", $this->trans("Select category or product", "Modules.OutOfStockReminder.Admin"));
 
                 }
-
-                return $this->redirectToRoute("out_of_stock/create_rule");
+                return $this->redirectToRoute("out_of_stock/create_rule", ["formData" => $request->request->all()["rule"]]);
             }
         }
         return $this->redirectToRoute("out_of_stock_rules");
@@ -141,7 +184,8 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
         ];
         if ($rule->getProductId() !== null) {
             $sql = new \DbQuery();
-            $sql->select("name")->from("product_lang")->where('id_product = "' . $rule->getProductId() . '" and id_lang ="' . $this->getContext()->language->id . '"')->orderBy("name");
+            $sql->select("name")->from("product_lang")
+                ->where('id_product = "' . $rule->getProductId() . '" and id_lang ="' . $this->getContext()->language->id . '"')->orderBy("name");
             $product = \Db::getInstance()->executeS($sql)[0]["name"];
             $data["product"] = $product;
 
@@ -152,11 +196,11 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
             $data["category_id"] = $rule->getCategoryId();
 
         }
-
+        $category_id = $rule->getCategoryId();
         $form = $this->createForm(RuleType::class, $data, ["action" => $this->generateUrl("out_of_stock_update", ["id" => $id]), "method" => "POST"]);
         $formView = $form->createView();
 
-        return $this->render("@Modules/outofstockreminder/views/templates/admin/edit.html.twig", compact("formView"));
+        return $this->render("@Modules/outofstockreminder/views/templates/admin/edit.html.twig", compact("formView", "category_id"));
     }
 
     public function updateAction(int $id, Request $request)
@@ -175,7 +219,7 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
             $sql = new \DbQuery();
             $sql->select("id_product")
                 ->from("product_lang")
-                ->where('name = "' . trim($form->get("product")->getData()) . '" and id_lang ="' . $this->getContext()->language->id . '"')
+                ->where('name = "' . pSQL(trim($form->get("product")->getData())) . '" and id_lang ="' . $this->getContext()->language->id . '"')
                 ->orderBy("name");
             $id_product = \Db::getInstance()->executeS($sql);
 
@@ -252,7 +296,7 @@ class OutOfStockReminderController extends FrameworkBundleAdminController
         $rule = $em->getRepository(Rule::class)->find($id);
         $em->remove($rule);
         $em->flush();
-        $this->addFlash("success", $this->trans("The rule successfully Deleted", "Modules.OutOfStockReminder.Admin"));
+        $this->addFlash("success", $this->trans("The rule successfully deleted", "Modules.OutOfStockReminder.Admin"));
 
         return $this->redirectToRoute("out_of_stock_rules");
     }

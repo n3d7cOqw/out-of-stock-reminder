@@ -13,22 +13,6 @@ class EmailController extends FrameworkBundleAdminController
 {
     public function sendMails()
     {
-        // правило з product_id та кількість товарів
-//        $qb = $this->getDoctrine()->getManager()->createQueryBuilder();
-//        $query = $qb->select("r")
-//            ->from(Rule::class, "r")
-//            ->where("r.status = " . 1 )
-//            ->where($qb->expr()->isNull("r.category_id"))
-//            ->getQuery();
-//        $categoryRules = $query->getResult();
-//        foreach ($categoryRules as $categoryRule){
-//            $sql = new \DbQuery();
-//            $sql->select("id_product")
-//                ->from("product")
-//                ->where("id_category_default = " . $categoryRule->getCategoryId())
-//                ->orderBy("id_product");
-//            $products = \Db::getInstance()->executeS($sql);
-//        }
 
         //products
 

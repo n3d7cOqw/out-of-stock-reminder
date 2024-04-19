@@ -25,8 +25,8 @@ services:
       - '@out_of_stock_reminder.grid.query_builder.rule'
       - '@prestashop.core.hook.dispatcher'
       - '@prestashop.core.grid.query.doctrine_query_parser'
-      - 'rule'
-# Configure our Grid Data factory to use the query builder that we registered above
+      - 'rules'
+
   out_of_stock_reminder.grid.factory.rules:
     class: 'PrestaShop\PrestaShop\Core\Grid\GridFactory'
     public: true
@@ -34,20 +34,7 @@ services:
       - '@out_of_stock_reminder.grid.definition.factory.rules'
       - '@out_of_stock_reminder.grid.data_provider.rules'
       - '@prestashop.core.grid.filter.form_factory'
-#      - '@prestaShop.prestaShop.core.grid.filter.grid_filter_form_factory_interface'
       - '@prestashop.core.hook.dispatcher'
       -
-#  prestashop.core.form.identifiable_object.data_provider.rule_form_data_provider:
-#    class: 'OutOfStockReminder\Form\RuleFormDataProvider'
-#
-#  prestashop.module.outofstockreminder.form.rule_form_data_handler:
-#    class: 'PrestaShop\PrestaShop\Core\Form\Handler'
-#    public: true
-#    arguments:
-#      - '@form.factory'
-#      - '@prestashop.core.hook.dispatcher'
-#      - '@prestashop.module.outofstockreminder.form.rule_form_data_provider'
-#      - 'PrestaShop\Module\DemoSymfonyFormSimple\Form\DemoConfigurationFormType'
-#      - 'OutOfStockReminder'
 
 

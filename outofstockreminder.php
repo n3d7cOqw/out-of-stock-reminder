@@ -47,7 +47,7 @@ class OutOfStockReminder extends Module
         `title` varchar(255) DEFAULT NULL, 
         `product_id` varchar(255) DEFAULT NULL, 
         `category_id` int(11) DEFAULT NULL, 
-        `threshold` varchar(255) DEFAULT NULL, 
+        `threshold` int(255) DEFAULT NULL, 
         `email` TEXT DEFAULT NULL,
         `status` int(2) DEFAULT NULL, 
         PRIMARY KEY (`id`)

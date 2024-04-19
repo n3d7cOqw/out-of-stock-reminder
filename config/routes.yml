@@ -6,8 +6,16 @@ out_of_stock_rules:
 #    _legacy_controller: AdminLinkWidget
 #    _legacy_link: 'MyModuleDemoController'
 
-sent_rule:
+out_of_stock_rules_search:
   path: out-of-stock/rules
+  methods: [POST]
+  defaults:
+    _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::searchAction
+    _legacy_controller: 'Admin\OutOfStockReminderController'
+    _legacy_link: 'Admin\OutOfStockReminderController:search'
+
+sent_rule:
+  path: out-of-stock/store-rules
   methods: [POST]
   defaults:
     _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::storeAction
@@ -47,3 +55,8 @@ out_of_stock/send_emails:
   path: out-of-stock/send-emails
   methods: [GET]
   controller: OutOfStockReminder\Controller\Admin\EmailController::sendMails
+
+out_of_stock/toggle_status:
+  path: out-of-stock/toggle-status/{id}
+  methods: [POST]
+  controller: OutOfStockReminder\Controller\Admin\StatusController::toggleStatus

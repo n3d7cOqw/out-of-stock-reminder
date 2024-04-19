@@ -29,4 +29,9 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('../modules/outofstockreminder/views/js/form.js') }}" defer></script>
+    <script src="{{ asset('../modules/outofstockreminder/views/js/selected_all.js') }}" defer></script>
+
+    {%if category_id is defined and category_id == "0"%}
+        <script> $("#rule_select_all_categories_1").prop("checked", true) </script>
+    {% endif %}
 {% endblock %}
