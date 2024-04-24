@@ -94,4 +94,9 @@ class OutOfStockReminder extends Module
         return $tab->delete();
     }
 
+    public function getContent()
+    {
+        $route = $this->get('router')->generate('out_of_stock_configuration');
+        Tools::redirectAdmin($route);
+    }
 }

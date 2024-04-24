@@ -9,6 +9,14 @@
         <div class="card-body ">
             {{ form_errors(formView) }}
             {{ form_widget(formView) }}
+            {#            {{ form_row(formView.product) }} #}
+            {#            {{ form_row(formView.select_all_categories) }} #}
+            {#            {{ form_row(formView.category_id) }} #}
+            {#            {{ form_row(formView.clear_categories) }} #}
+            {#            {{ form_row(formView.threshold) }} #}
+            {#            {{ form_row(formView.status) }} #}
+            {#            {{ form_row(formView.email) }} #}
+            {#            {{ form_row(formView.product_id) }} #}
 
         </div>
 
@@ -25,13 +33,28 @@
     {{ form_end(formView) }}
 {% endblock content %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('../modules/outofstockreminder/views/css/style.css') }}">
+{% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('../modules/outofstockreminder/views/js/form.js') }}" defer></script>
     <script src="{{ asset('../modules/outofstockreminder/views/js/selected_all.js') }}" defer></script>
+    <script src="{{ asset('../modules/outofstockreminder/views/js/search.js') }}" defer></script>
 
-    {%if category_id is defined and category_id == "0"%}
+
+    {% if category_id is defined and category_id == "0" %}
         <script> $("#rule_select_all_categories_1").prop("checked", true) </script>
     {% endif %}
+    {% if productInfo is defined %}
+        <script> const selected_product = `<div class="selected-product">
+            <img src="{{ productInfo.img }}" alt="" width="200" height="200">
+                <div class="search-product-text"> <span><i class="material-icons entity-item-delete" id="delete-selected-item">delete</i></span> {{ productInfo.name }}  (ref:  {{ productInfo.reference }} )</div>
+        </div>`
+            $("#rule_product").after(selected_product)
+        </script>
+    {% endif %}
+
 {% endblock %}

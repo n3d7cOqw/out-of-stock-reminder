@@ -3,6 +3,7 @@ $(document).ready(function () {
         if ($(event.target).is("input[type='radio']")){
             const toggle = $(event.target)
             const link =  toggle.parent().data("toggle-url")
+
             $.post(link, function(responce){
                 if (responce.success){
                     $(".growl").text(responce.text)

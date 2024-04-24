@@ -3,7 +3,6 @@
 namespace OutOfStockReminder\Controller\Admin;
 
 use OutOfStockReminder\Entity\Rule;
-
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Tools;

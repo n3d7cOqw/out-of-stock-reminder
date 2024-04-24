@@ -65,6 +65,18 @@ class RuleValidator
             + intval(isset($request->request->get("rule")["category_id"]) + intval($request->request->get("rule")["select_all_categories"])) === 1;
     }
 
+    public static function isSelectedProductOrCategory(Request $request){
+        $errors = [];
+        if ($request->get("rule")["option"] === "1" && trim($request->get("rule")["product"]) === "" ){
+            $errors["product"] = "Add the product or category";
+
+        }
+        if ($request->get("rule")["option"] === "2" && !isset($request->get("rule")["category_id"]) && $request->get("rule")["select_all_categories"] !== "1" ){
+            $errors["category"] = "Add the product or category";
+        }
+        return $errors;
+    }
+
     
 
 

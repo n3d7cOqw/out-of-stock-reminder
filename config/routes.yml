@@ -51,12 +51,26 @@ out_of_stock_delete:
   defaults:
     _controller: OutOfStockReminder\Controller\Admin\OutOfStockReminderController::deleteAction
 
-out_of_stock/send_emails:
-  path: out-of-stock/send-emails
-  methods: [GET]
-  controller: OutOfStockReminder\Controller\Admin\EmailController::sendMails
+#out_of_stock/send_emails:
+#  path: out-of-stock/send-emails
+#  methods: [GET]
+#  controller: OutOfStockReminder\Controller\Admin\EmailController::sendMails
 
 out_of_stock/toggle_status:
   path: out-of-stock/toggle-status/{id}
   methods: [POST]
   controller: OutOfStockReminder\Controller\Admin\StatusController::toggleStatus
+
+out_of_stock_configuration:
+  path: /out-of-stock/configuration
+  methods: [GET, POST]
+  defaults:
+    _controller: OutOfStockReminder\Controller\OutOfStockReminderConfigurationController::index
+    # Needed to work with tab system
+    _legacy_controller: AdminOutOfStockReminderConfigurationController
+    _legacy_link: AdminOutOfStockReminderConfigurationController
+
+out_of_stock_search_product:
+  path: out-of-stock/search-status
+  methods: [POST]
+  controller: OutOfStockReminder\Controller\Admin\SearchProductController::search
