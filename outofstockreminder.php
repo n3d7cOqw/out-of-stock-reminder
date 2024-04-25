@@ -1,5 +1,14 @@
 <?php
 
+use PrestaShop\PrestaShop\Core\MailTemplate\FolderThemeScanner;
+use PrestaShop\PrestaShop\Core\MailTemplate\Layout\Layout;
+use PrestaShop\PrestaShop\Core\MailTemplate\Layout\LayoutInterface;
+use PrestaShop\PrestaShop\Core\MailTemplate\Layout\LayoutVariablesBuilderInterface;
+use PrestaShop\PrestaShop\Core\MailTemplate\ThemeCatalogInterface;
+use PrestaShop\PrestaShop\Core\MailTemplate\ThemeCollectionInterface;
+use PrestaShop\PrestaShop\Core\MailTemplate\ThemeInterface;
+
+
 if (!defined("_PS_VERSION_")) {
     exit();
 }

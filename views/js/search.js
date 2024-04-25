@@ -4,7 +4,7 @@ $(document).ready(function () {
 
     $("#rule_product").on("input", function () {
         $(".selected-product").remove();
-        // if ($("#rule_product").val().length > 2) {
+        if ($("#rule_product").val().length !== 0) {
             let searched_product = $(this).val()
             const link = $("#rule_product").data("url")
             $.post(link, {"search": searched_product}, function (response) {
@@ -15,12 +15,12 @@ $(document).ready(function () {
                         for (let elem of response) {
                             content += `<div class="d-flex mt-2 search-item" data-name = "${elem.name}" data-id ="${elem.id_product}" data-img ="${elem.img}"  data-ref = "${elem.reference}">
 <div>
-<img src="${elem.img}" alt="" width="100" height="100" class="pl-2">
+<img src="${elem.img}" alt="" class="search-image pl-2" >
 </div>
-<div class="item-container pt-2 pl-2 pr-2" >
-
+<div class="item-container pt-0 pl-2 pr-2" >
+<div>
  ${elem.name} (ref: ${elem.reference} ) 
-
+</div>
 </div>
 </div>`
 
@@ -37,12 +37,13 @@ $(document).ready(function () {
             }).fail(function () {
                 console.error("AJAX error")
             })
-        // }else{
-        //     if ($("#search-input")){
-        //         $("#search-input").remove()
-        //     }
-        //
+        }else
+    {
+        if ($("#search-input")) {
+            $("#search-input").remove()
+        }
 
+    }
 })
 
     //delete selected product

@@ -75,3 +75,12 @@
     cursor: pointer;
 }
 
+.search-image{
+    height: 50px;
+    width: auto;
+}
+
+.item-container{
+    display: flex;
+    align-items: center;
+}

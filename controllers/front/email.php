@@ -13,157 +13,118 @@ class OutOfStockReminderEmailModuleFrontController extends ModuleFrontController
     {
 
         //products
-
         $sql = new \DbQuery();
-        $sql->select("r.title, r.threshold, r.category_id, r.product_id, r.status, r.email, p.quantity")
+        $sql->select("DISTINCT r.title, r.threshold, r.product_id, r.status, r.email, p.quantity, pl.name")
             ->from("out_of_stock_rules", "r")
-            ->where("r.status = 1 AND r.product_id IS NOT NULL ")
-            ->innerJoin("stock_available", "p", "p.id_product = r.product_id");
+            ->leftJoin("stock_available", "p", "p.id_product = r.product_id")
+            ->leftJoin("product_lang", "pl", "pl.id_product = r.product_id" )
+            ->where("r.status = 1 AND r.product_id IS NOT NULL and p.id_product_attribute = 0");
 
         $rules = Db::getInstance()->executeS($sql);
-        $checkedRules = []; // тут айді товарів які перевірено
 
+        $checkedRules = [];
         foreach ($rules as $rule) {
-
             $checkedRules[] = $rule["product_id"];
+            $emails = explode(" ", $rule["email"]);if ($rule["threshold"] > $rule["quantity"]) {
+                Mail::Send(
+                    (int)(Configuration::get('PS_LANG_DEFAULT')),
+                    'outofstockreminder',
+                    $this->trans('Out of Stock', [], "Emails.Subject"),
+                    array(
+                        '{message}' => $this->trans('The rule ' . $rule["title"]
+                                . ' has been exceeded for product' . $rule["name"]. ' with id - '. $rule["product_id"] . '. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] . ", product quantity is " . $rule["quantity"] , [],
+                                "Emails.Body") ,
+                    ),
+                    $emails,
+                    NULL, NULL, NULL, NULL, NULL, _PS_MODULE_DIR_ . 'outofstockreminder/mails'
+                );
 
-            $emails = explode(" ", $rule["email"]);
-
-            if ($rule["threshold"] < $rule["quantity"]) {
-
-                foreach ($emails as $email) {
-
-                    Mail::Send(
-                        (int)(Configuration::get('PS_LANG_DEFAULT')),
-                        'contact',
-                        $this->trans('Out of Stock', [], "Emails.Subject"),
-                        array(
-                            '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-                            '{message}' => $this->trans('The rule ' . $rule["title"] . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ', [], "Emails.Body") . $rule["threshold"],
-                            "{order_name}" => "",
-                            "{attached_file}" => ""
-                        ),
-                        $email,
-                        null,
-                        Configuration::get("PS_SHOP_EMAIL"),
-                    );
-                }
             }
 
         }
 
         //categories
-
         $sql = new \DbQuery();
-        $sql->select("r.title, r.threshold, r.category_id, r.product_id, r.status, r.email")
+        $sql->select("DISTINCT r.title, r.threshold, r.category_id, r.product_id, r.status, r.email")
             ->from("out_of_stock_rules", "r")
             ->where("r.status = 1 AND r.category_id IS NOT NULL ");
         $rules = Db::getInstance()->executeS($sql);
 
-        foreach ($rules as $rule) {
 
+        foreach ($rules as $rule) {
             if ($rule["category_id"] !== "0") {
                 $sql = new \DbQuery();
                 $sql->select("id_product")
                     ->from("product")
                     ->where("id_category_default = " . $rule["category_id"]);
-
                 $products = Db::getInstance()->executeS($sql);
                 foreach ($products as $product) {
-
                     if (!in_array($product["id_product"], $checkedRules)) {
                         $checkedRules[] = $product["id_product"];
                         $sql = new \DbQuery();
-                        $sql->select("quantity")
-                            ->from("stock_available")
-                            ->where("id_product = " . $product["id_product"]);
-                        $quantity = Db::getInstance()->executeS($sql);
+                        $sql->select("DISTINCT sa.quantity, pl.name, pl.id_product")
+                            ->from("stock_available", "sa")
+                            ->leftJoin("product_lang", "pl", "pl.id_product = sa.id_product" )
+                            ->where("sa.id_product = " . $product["id_product"] . " AND id_product_attribute = 0");
+
+                        $productInfo = Db::getInstance()->executeS($sql);
                         $emails = explode(" ", $rule["email"]);
+                        if ($rule["threshold"] > $productInfo[0]["quantity"]) {Mail::Send(
+                                (int)(Configuration::get('PS_LANG_DEFAULT')),
+                                'outofstockreminder',
+                                $this->trans('Out of Stock', [], "Emails.Subject"),
+                                array(
+                                    '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+                                    '{message}' => $this->trans('The rule ' . $rule["title"]
+                                        . ' has been exceeded for product' . $productInfo[0]["name"]. ' with id - '. $productInfo[0]["id_product"] . '. Please change quantity of stock goods. Threshold is ' . $rule["threshold"] . ", product quantity is " . $productInfo[0]["quantity"] , [],
+                                        "Emails.Body") ,
+                                ),
+                                $emails,
+                                NULL, NULL, NULL, NULL, NULL, _PS_MODULE_DIR_ . 'outofstockreminder/mails'
 
-                        if ($rule["threshold"] < $quantity[0]["quantity"]) {
-                            foreach ($emails as $email) {
-                                Mail::Send(
-                                    (int)(Configuration::get('PS_LANG_DEFAULT')),
-                                    'contact',
-                                    $this->trans('Out of Stock', [], "Emails.Subject"),
-                                    array(
-                                        '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-                                        '{message}' => $this->trans('The rule ' . $rule["title"]
-                                                . ' has been exceeded. Selected quantity of goods is higher that limit. Please change quantity of stock goods. Threshold is ', [],
-                                                "Emails.Body") . $rule["threshold"],
-                                        "{order_name}" => "",
-                                        "{attached_file}" => ""
-                                    ),
-                                    $email,
-                                    NULL, //receiver name
-                                    NULL, //from email address
-                                    NULL  //from name
-
-                                );
-                            }
+                            );
                         }
                     }
                 }
             }
         }
+
+
         //default rule
-
-//        $qb = $entityManager->createQueryBuilder();
-//        $query = $qb->select("r")
-//            ->from(Rule::class, "r")
-//            ->where("r.status = 1")
-//            ->Andwhere("r.category_id = 0")
-//            ->getQuery();
-//        $defaultRule = $query->getResult();
-
         $sql = new \DbQuery();
         $sql->select("*")
-            ->from("out_of_stock_rules", )
+            ->from("out_of_stock_rules",)
             ->where("status = 1 AND category_id = 0 ");
-
         $defaultRule = Db::getInstance()->executeS($sql);
 
         if (count($defaultRule) > 0) {
             $sql = new \DbQuery();
-            $sql->select("p.name, s.quantity, p.id_product")
+            $sql->select("DISTINCT p.name, s.quantity, p.id_product")
                 ->from("stock_available", "s")
-                ->where("s.quantity > " . $defaultRule[0]["threshold"])
-                ->where("id_lang = " . $this->context->language->id)
-                ->innerJoin("product_lang", "p", "p.id_product = s.id_product");
+                ->innerJoin("product_lang", "p", "p.id_product = s.id_product")
+                ->where("s.quantity < " . $defaultRule[0]["threshold"] . " and s.id_product_attribute = 0")
+                ->where("id_lang = " . $this->context->language->id);
             $products = Db::getInstance()->executeS($sql);
             foreach ($products as $product) {
-
                 if (!in_array($product["id_product"], $checkedRules)) {
-                    if ($product["quantity"] > $defaultRule[0]["threshold"]) {
-
-                        $emails = explode(" ", $defaultRule[0]["email"]);
-                        foreach ($emails as $email) {
-                            $email = trim($email); // Удаляем лишние пробелы
-                            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                                Mail::Send(
-                                    (int)(Configuration::get('PS_LANG_DEFAULT')),
-                                    'contact',
-                                    $this->trans('Out of Stock', [], "Emails.Subject"),
-                                    array(
-                                        '{email}' => Configuration::get('PS_SHOP_EMAIL'),
-                                        '{message}' => $this->trans('The rule ' . $defaultRule[0]["title"] . ' has been exceeded. Selected quantity of goods is higher than the limit. Please change the quantity of stocked goods. Threshold is ', [], "Emails.Body") . $defaultRule[0]["threshold"],
-                                        '{order_name}' => '',
-                                        '{attached_file}' => ''
-                                    ),
-                                    $email,
-                                    null,
-                                    Configuration::get("PS_SHOP_EMAIL")
-                                );
-                            }
-                        }
-
-
+                    if ($product["quantity"] < $defaultRule[0]["threshold"]) {
+                        $emails = explode(" ", $defaultRule[0]["email"]);Mail::Send(
+                            (int)(Configuration::get('PS_LANG_DEFAULT')),
+                            'outofstockreminder',
+                            $this->trans('Out of Stock', [], "Emails.Subject"),
+                            array(
+                                '{email}' => Configuration::get('PS_SHOP_EMAIL'),
+                                '{message}' => $this->trans('The rule ' . $defaultRule[0]["title"]
+                                    . ' has been exceeded for product' . $product["name"]. ' with id - '. $product["id_product"] . '. Please change quantity of stock goods. Threshold is ' . $defaultRule[0]["threshold"] . ", product quantity is " . $product["quantity"] , [],
+                                    "Emails.Body") ,
+                            ),
+                            $emails,
+                            NULL, NULL, NULL, NULL, NULL, _PS_MODULE_DIR_ . 'outofstockreminder/mails'
+                        );
                     }
                 }
             }
         }
         exit();
     }
-
-
 }

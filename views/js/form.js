@@ -30,6 +30,10 @@ $(document).ready(function () {
                 $("#rule_product").parent().parent().show()
                 break;
             case "2":
+                if($(".selected-product")){
+                    $(".selected-product").remove()
+                }
+
                 $("#rule_product").parent().parent().hide()
                 $("#rule_product").val(null)
                 $("#rule_category_id").parent().parent().show();

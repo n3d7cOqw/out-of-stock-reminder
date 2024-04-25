@@ -1,13 +1,5 @@
  
 
-{shop_url}
-
-Message from a {shop_name} customer
-
-Customer Email Address: {email}
-
-Customer message:
-
 {message}
 
 [{shop_name}]({shop_url})

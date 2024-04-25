@@ -13,7 +13,7 @@ class RuleValidator
 
 
     public static function isValidThreshold($threshold): bool{
-        return $threshold > 0;
+        return (int) $threshold > -1;
     }
 
     public static function isValidEmails($emails): bool{
